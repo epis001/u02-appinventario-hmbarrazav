@@ -2,14 +2,24 @@ package com.example.appinventario;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.app.ProgressDialog;
+import android.content.Intent;
+import android.database.Cursor;
+import android.graphics.BitmapFactory;
+import android.net.Uri;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+
+import java.io.File;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -23,11 +33,21 @@ public class CreateProd extends AppCompatActivity {
     servicesRetrofit miserviceretrofit;
     EditText edtnombre;
     EditText edtprecio;
+    ProgressDialog progressDialog;
+    String mediaPath="";
+    ImageView imgView;
+    TextView str1;
+    File file;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_create_prod);
+        progressDialog = new ProgressDialog(this);
+        progressDialog.setMessage("Subiendo...");
+        imgView = (ImageView) findViewById(R.id.preview);
+        str1 = (TextView) findViewById(R.id.miruta);
+
         final String url = getString(R.string.midominio);
         Gson gson = new GsonBuilder()
                 .setLenient()
@@ -70,5 +90,35 @@ public class CreateProd extends AppCompatActivity {
             }
         });
     }
+    public void imagen(View view) {
+        Intent seleccionFotografiaIntent = new Intent();
+        seleccionFotografiaIntent.setType("image/*");
+        seleccionFotografiaIntent.setAction(Intent.ACTION_PICK);
+        startActivityForResult(Intent.createChooser(seleccionFotografiaIntent,
+                "Seleccionar fotografía"),0);
+    }
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        try {
+            if (requestCode == 0 && resultCode == RESULT_OK && null != data) {
+                Uri selectedImage = data.getData();
+                mediaPath = getRealPathFromURI(selectedImage);
+                str1.setText(mediaPath);
+                imgView.setImageBitmap(BitmapFactory.decodeFile(mediaPath));
+            } else {
+                Toast.makeText(this, "tu no haz pulsado una imagen", Toast.LENGTH_LONG).show();
+            }
+        } catch (Exception e) {
+            Toast.makeText(this, "Hubo algun error", Toast.LENGTH_LONG).show();
+        }
+    }
+    public String getRealPathFromURI(Uri uri) {
+        Cursor cursor = getContentResolver().query(uri, null, null, null, null);
+        cursor.moveToFirst();
+        int idx = cursor.getColumnIndex(MediaStore.Images.ImageColumns.DATA);
+        return cursor.getString(idx);
+    }
+
 }
 
