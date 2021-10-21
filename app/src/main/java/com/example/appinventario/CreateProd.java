@@ -21,6 +21,9 @@ import com.google.gson.GsonBuilder;
 
 import java.io.File;
 
+import okhttp3.MediaType;
+import okhttp3.MultipartBody;
+import okhttp3.RequestBody;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -63,11 +66,40 @@ public class CreateProd extends AppCompatActivity {
     }
 
     public void nuevoproducto(final View view) {
-        if (edtnombre.getText().length() != 0 && edtprecio.getText().length() != 0) {
-            insertarproducto(view);
-        } else
-            Toast.makeText(CreateProd.this, "Debe Ingresar un nombre y un precio", Toast.LENGTH_SHORT).show();
+        if (edtnombre.getText().length() != 0 && edtprecio.getText().length() != 0 &&mediaPath.length()!=0) {
+            subirimagen(view);
+        }
+        else Toast.makeText(CreateProd.this, "Debe Ingresar un nombre, un precio y seleccionar una imagen", Toast.LENGTH_SHORT).show();
     }
+    void subirimagen(final View view){
+        progressDialog.show(); view.setEnabled(false);
+        file = new File(mediaPath);
+        RequestBody requestBody = RequestBody.create(MediaType.parse("*/*"), file);
+        MultipartBody.Part fileToUpload = MultipartBody.Part.createFormData("file", file.getName(), requestBody);
+        RequestBody filename = RequestBody.create(MediaType.parse("text/plain"), file.getName());
+        ApiConfig getResponse = AppConfig.getRetrofit().create(ApiConfig.class);
+        Call<ServerResponse> callupload = getResponse.uploadFile(fileToUpload, filename);
+        callupload.enqueue(new Callback<ServerResponse>() {
+            @Override
+            public void onResponse(Call<ServerResponse> callupload, Response<ServerResponse> response) {
+                ServerResponse serverResponse = response.body();
+                if (serverResponse != null) {
+                    Log.i("respuesta",serverResponse.getMessage());
+                    if (serverResponse.getSuccess()) {
+                        Toast.makeText(getApplicationContext(), serverResponse.getMessage(), Toast.LENGTH_SHORT).show();
+                        //insertarproducto(view);
+                    } else { Toast.makeText(getApplicationContext(), serverResponse.getMessage(), Toast.LENGTH_SHORT).show(); }
+                } else {
+                    assert serverResponse != null;
+                    Log.v("Response", serverResponse.toString());
+                }
+                progressDialog.dismiss(); view.setEnabled(true);
+            }
+            @Override
+            public void onFailure(Call<ServerResponse> call, Throwable t) { }
+        });
+    }
+
 
     void insertarproducto(final View view) {
         view.setEnabled(false);
