@@ -4,8 +4,10 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.google.gson.Gson;
@@ -47,6 +49,51 @@ public class DetalleProducto extends AppCompatActivity {
             }
             @Override
             public void onFailure(Call<Productos> call, Throwable t) { Log.e("cargarproducto",t.toString()); }
+        });
+    }
+
+    public void Delete(View view) {
+        Call<String> call = miserviceretrofit.deleteproducto(miproducto.getId());
+        call.enqueue(new Callback<String>() {
+            @Override
+            public void onResponse(Call<String> call, Response<String> response) {
+                int poscode=miproducto.getImg().indexOf("uploads");
+                String miimagen= miproducto.getImg().substring(poscode);
+                miproducto.setImg(miimagen);
+                ApiConfig getResponse = AppConfig.getRetrofit().create(ApiConfig.class);
+                Call<ServerResponse> callupload = getResponse.delete(miproducto);
+                callupload.enqueue(new Callback<ServerResponse>() {
+                    @Override
+                    public void onResponse(Call<ServerResponse> callupload, Response<ServerResponse> response) {
+                        ServerResponse serverResponse = response.body();
+                        if (serverResponse != null) {
+                            Log.i("mieliminacion", serverResponse.getMessage());
+                            Toast.makeText(DetalleProducto.this, "Producto eliminado", Toast.LENGTH_SHORT).show();
+                        } else {
+                            assert serverResponse != null;
+                            Log.v("Response", serverResponse.toString());
+                        }
+                        finish();
+                    }
+                    @Override
+                    public void onFailure(Call<ServerResponse> call, Throwable t) { }
+                });
+            }
+            @Override
+            public void onFailure(Call<String> call, Throwable t) { Log.e("deleteproducto",t.toString()); }
+        });
+    }
+    public void update(View view) {
+        final Productos producto= new Productos(edtnombre.getText().toString(),
+                Integer.parseInt(edtprecio.getText().toString()));
+        Call<String> call = miserviceretrofit.updateproducto(miproducto.getId(),producto);
+        call.enqueue(new Callback<String>() {
+            @Override
+            public void onResponse(Call<String> call, Response<String> response) {
+                Toast.makeText(DetalleProducto.this, "Datos del Producto Actualizados",Toast.LENGTH_SHORT).show();
+            }
+            @Override
+            public void onFailure(Call<String> call, Throwable t) {Log.e("updateproducto",t.toString()); }
         });
     }
 }
