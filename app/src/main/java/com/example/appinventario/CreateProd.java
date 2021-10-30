@@ -87,7 +87,7 @@ public class CreateProd extends AppCompatActivity {
                     Log.i("respuesta",serverResponse.getMessage());
                     if (serverResponse.getSuccess()) {
                         Toast.makeText(getApplicationContext(), serverResponse.getMessage(), Toast.LENGTH_SHORT).show();
-                        //insertarproducto(view);
+                        insertarproducto(view);
                     } else { Toast.makeText(getApplicationContext(), serverResponse.getMessage(), Toast.LENGTH_SHORT).show(); }
                 } else {
                     assert serverResponse != null;
@@ -103,7 +103,9 @@ public class CreateProd extends AppCompatActivity {
 
     void insertarproducto(final View view) {
         view.setEnabled(false);
-        final Productos producto = new Productos(edtnombre.getText().toString(),
+        /*final Productos producto = new Productos(edtnombre.getText().toString(),
+                Integer.parseInt(edtprecio.getText().toString()));*/
+        final Productos producto= new Productos(AppConfig.BASE_URL+"uploads/"+file.getName(), edtnombre.getText().toString(),
                 Integer.parseInt(edtprecio.getText().toString()));
         Call<String> call = miserviceretrofit.newproducto(producto);
         call.enqueue(new Callback<String>() {
