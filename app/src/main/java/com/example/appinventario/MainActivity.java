@@ -2,6 +2,8 @@ package com.example.appinventario;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.FragmentActivity;
+import androidx.recyclerview.widget.GridLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -12,6 +14,7 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import retrofit2.Call;
@@ -27,11 +30,27 @@ public class MainActivity extends FragmentActivity {
     private static final int RC_UPDATE_PRODUCT = 2;
     Retrofit retrofit; 
     servicesRetrofit miserviceretrofit;
+    RecyclerView recyclerView;
+    GridLayoutManager gridLayoutManager;
+    ArrayList<Productos> imageUrlList;
+    DataAdapter dataAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        imageUrlList=new ArrayList<>();
+        recyclerView = (RecyclerView) findViewById(R.id.recycler_view);
+        gridLayoutManager = new GridLayoutManager(this, 2);
+        recyclerView.setLayoutManager(gridLayoutManager);
+        dataAdapter = new DataAdapter(this, imageUrlList);
+        recyclerView.setAdapter(dataAdapter);
+
+        RecyclerView recyclerView;
+        GridLayoutManager gridLayoutManager;
+        ArrayList<Productos> imageUrlList;
+        DataAdapter dataAdapter;
+
         fabaddproduct = findViewById(R.id.fabaddProduct);
         fabaddproduct.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -56,6 +75,9 @@ public class MainActivity extends FragmentActivity {
             @Override
             public void onResponse(Call<List<Productos>> call, Response<List<Productos>> response) {
                 Log.e("mirespuesta: ", response.toString());
+                Log.e("mirespuesta: ", response.body().toString());
+                dataAdapter.update(response.body());
+
                 for(Productos res : response.body()) {
                     Log.e("mirespuesta: ","id="+res.getId()+" prod="+res.getName() +" precio"+res.getPrice());
                 }
