@@ -1,6 +1,7 @@
 package com.example.appinventario;
 
 import android.content.Context;
+import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -24,10 +25,18 @@ public class DataAdapter extends RecyclerView.Adapter<DataAdapter.ViewHolder> {
         return new ViewHolder(view);
     }
     @Override
-    public void onBindViewHolder(ViewHolder viewHolder, int i) {
+    public void onBindViewHolder(ViewHolder viewHolder, final int i) {
         Glide.with(context).load(imageUrls.get(i).getImg()).into(viewHolder.img);
         viewHolder.nombre.setText(imageUrls.get(i).getName());
         viewHolder.precio.setText(imageUrls.get(i).getPrice()+"");
+        viewHolder.itemView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(context, DetalleProducto.class);
+                intent.putExtra("midato", imageUrls.get(i).getName());
+                ((MainActivity)context).startActivityForResult(intent, 2);
+            }
+        });
     }
     @Override
     public int getItemCount() {
